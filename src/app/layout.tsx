@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: "Portfolio de DannyByte - Full Stack Developer con experiencia en React, Node.js, TypeScript y más.",
   keywords: ["DannyByte", "Full Stack Developer", "React", "Node.js", "TypeScript", "Portfolio"],
   authors: [{ name: "DannyByte" }],
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
