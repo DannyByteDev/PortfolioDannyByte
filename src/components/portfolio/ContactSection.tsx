@@ -2,50 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Mail, MapPin, Phone, CheckCircle, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Send, Mail, MapPin, Phone } from 'lucide-react';
 
 export default function ContactSection() {
-  const [formState, setFormState] = useState({ name: '', email: '', message: '' });
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch('https://formsubmit.co/ajax/ceballosdaniel505@gmail.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          name: formState.name,
-          email: formState.email,
-          message: formState.message,
-          _subject: `Portfolio Contact from ${formState.name}`,
-        }),
-      });
-
-      if (res.ok) {
-        toast({
-          title: 'Message sent!',
-          description: 'Thanks for reaching out. I\'ll get back to you soon.',
-        });
-        setFormState({ name: '', email: '', message: '' });
-      } else {
-        throw new Error('Failed to send');
-      }
-    } catch {
-      toast({
-        title: 'Something went wrong',
-        description: 'Please try again or contact me directly via email.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const contactInfo = [
     { icon: Mail, label: 'Email', value: 'ceballosdaniel505@gmail.com', href: 'mailto:ceballosdaniel505@gmail.com', color: '#00eeff' },
@@ -109,7 +69,6 @@ export default function ContactSection() {
               </motion.div>
             ))}
 
-            {/* Social links - clickable */}
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.5 }} viewport={{ once: true }}
               className="flex gap-3 pt-4">
               {socialLinks.map((social) => (
@@ -123,8 +82,19 @@ export default function ContactSection() {
             </motion.div>
           </div>
 
-          <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }} viewport={{ once: true }} className="lg:col-span-3 space-y-6">
+          {/* Form - direct FormSubmit submission (works on static hosting) */}
+          <motion.form
+            action="https://formsubmit.co/ceballosdaniel505@gmail.com"
+            method="POST"
+            initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }} viewport={{ once: true }} className="lg:col-span-3 space-y-6"
+          >
+            {/* FormSubmit config */}
+            <input type="hidden" name="_next" value="" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_subject" value="Portfolio Contact - New Message" />
+            <input type="text" name="_honey" style={{ display: 'none' }} />
+
             {[
               { name: 'name', type: 'text', label: 'Your Name', placeholder: 'John Doe' },
               { name: 'email', type: 'email', label: 'Your Email', placeholder: 'john@example.com' },
@@ -133,8 +103,7 @@ export default function ContactSection() {
                 transition={{ delay: 0.1 + i * 0.1 }} viewport={{ once: true }}>
                 <label className="block text-sm font-medium text-gray-400 mb-2">{field.label}</label>
                 <div className="relative">
-                  <input type={field.type} value={formState[field.name as keyof typeof formState]}
-                    onChange={(e) => setFormState(prev => ({ ...prev, [field.name]: e.target.value }))}
+                  <input type={field.type} name={field.name}
                     onFocus={() => setFocusedField(field.name)} onBlur={() => setFocusedField(null)}
                     placeholder={field.placeholder} required
                     className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-300" />
@@ -151,8 +120,7 @@ export default function ContactSection() {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} viewport={{ once: true }}>
               <label className="block text-sm font-medium text-gray-400 mb-2">Your Message</label>
               <div className="relative">
-                <textarea value={formState.message}
-                  onChange={(e) => setFormState(prev => ({ ...prev, message: e.target.value }))}
+                <textarea name="message"
                   onFocus={() => setFocusedField('message')} onBlur={() => setFocusedField(null)}
                   placeholder="Tell me about your project..." rows={5} required
                   className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-300 resize-none" />
@@ -165,17 +133,12 @@ export default function ContactSection() {
               </div>
             </motion.div>
 
-            <motion.button type="submit" disabled={isSubmitting}
+            <motion.button type="submit"
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              className="relative w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold text-sm overflow-hidden group disabled:opacity-50"
+              className="relative w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold text-sm overflow-hidden group"
               data-cursor-hover>
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {isSubmitting ? (
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full" />
-                ) : (
-                  <><Send className="w-4 h-4" /> Send Message</>
-                )}
+                <Send className="w-4 h-4" /> Send Message
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.button>
